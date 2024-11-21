@@ -52,7 +52,7 @@ sh.addShard("shard2RS/shard2:27017")
 ```
 docker exec -it mongos mongosh --port 27020
 
-use pricedb
+use pricesdb
 db.prices.createIndex({ "COUNTRY": 1 })
 
 sh.enableSharding("pricesdb")
