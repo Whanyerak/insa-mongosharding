@@ -1,0 +1,51 @@
+services:
+  # Config Server
+  configsvr:
+    container_name: configsvr
+    image: mongo:6.0
+    command: mongod --configsvr --replSet configReplSet --port 27019 --bind_ip localhost,configsvr
+    ports:
+      - 27019:27019
+    networks:
+      - mongonetwork
+
+  # Shard 1
+  shard1:
+    container_name: shard1
+    image: mongo:6.0
+    command: mongod --shardsvr --replSet shard1ReplSet --port 27018 --bind_ip localhost,shard1
+    ports:
+      - 27018:27018
+    networks:
+      - mongonetwork
+
+  # Shard 2
+  shard2:
+    container_name: shard2
+    image: mongo:6.0
+    command: mongod --shardsvr --replSet shard2ReplSet --port 27017 --bind_ip localhost,shard2
+    ports:
+      - 27017:27017
+    networks:
+      - mongonetwork
+
+  # Mongo Router (mongos)
+  mongos:
+    container_name: mongos
+    image: mongo:6.0
+    command: mongos --configdb configReplSet/configsvr:27019 --port 27020 --bind_ip localhost,mongos
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongoadmin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    ports:
+      - 27020:27020
+    networks:
+      - mongonetwork
+    depends_on:
+      - configsvr
+      - shard1
+      - shard2
+
+networks:
+  mongonetwork:
+    driver: bridge
