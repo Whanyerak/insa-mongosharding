@@ -17,6 +17,8 @@ rs.initiate({
   configsvr: true,
   members: [{ _id: 0, host: "configsvr:27019" }]
 })
+
+exit
 ```
 
 ### Step 3 : initialiser les Shards
@@ -29,12 +31,16 @@ rs.initiate({
   members: [{ _id: 0, host: "shard1:27018" }]
 })
 
+exit
+
 docker exec -it shard2 mongosh --port 27017
 
 rs.initiate({
   _id: "shard2RS",
   members: [{ _id: 0, host: "shard2:27017" }]
 })
+
+exit
 ```
 
 ### Step 4 : ajout des shards au routeur mongos
@@ -45,6 +51,8 @@ docker exec -it mongos mongosh --port 27020
 sh.addShard("shard1RS/shard1:27018")
 
 sh.addShard("shard2RS/shard2:27017")
+
+exit
 ```
 
 ### Step 5 : ajout d'un champ partagé avec index
@@ -57,6 +65,8 @@ db.prices.createIndex({ "COUNTRY": 1 })
 
 sh.enableSharding("pricesdb")
 sh.shardCollection("pricesdb.prices", { "COUNTRY": 1 })
+
+exit
 ```
 
 ### Step 6 : définir les valeurs de répartition
@@ -76,12 +86,12 @@ sh.moveChunk("pricesdb.prices", { COUNTRY: "GB" }, "shard2RS")
 ## Step 8 : créer un utilisateur qui a les droits d'écriture
 
 ```
-docker exec -it mongos mongosh --port 27020
-
 use admin
 db.createUser({
   user: "admin",
   pwd: "password123",
   roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
 })
+
+exit
 ```
